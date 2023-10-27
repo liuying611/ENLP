@@ -1,15 +1,15 @@
 ### Description of the Files
 Root Folder: ENLP
-- Exploring: All files produced to explore the dataset, models, sentiment analysis, deminision reduction and so on in the duration of improving the Project;
-- data: 1. the original Kaggle dat [News_Category_Dataset_v3.json](https://www.kaggle.com/datasets/rmisra/news-category-dataset); 2. others are sampled data with different sizes with or without dimension reduced (PCA);
-- Visuallization: Images
+
 - EDA.py: modularized functions for cleaning, statistic, and other operation needed;
 - modernNN.py: modularized models, LSTM and CNN;
 - workflow_dataprocessing.ipynb: steps to clean raw data, requires ```from EDA import *```;
 - workflow_train_NN*.ipynb: steps to train modern neural network models, requires ```from modernNN import *```,
 - workflow_usual_model.ipynb: steps to train traditional machine learning models.
 - workflow_visual.ipynb: visualization of models' result, and some of the visualization work are done in the above model training notebooks.
-
+- Visuallization[Folder]: Images
+- data[Folder]: 1. the original Kaggle data [News_Category_Dataset_v3.json](https://www.kaggle.com/datasets/rmisra/news-category-dataset); 2. others are sampled data with different sizes with or without dimension reduced (PCA);
+- Exploring[Folder]: All files produced to explore the dataset, models, sentiment analysis, deminision reduction and so on in the duration of improving the Project;
 
 
 ### Code Reference
