@@ -10,6 +10,9 @@ from gensim.models import Word2Vec, KeyedVectors
 from torch import nn
 from torch.nn import functional as F
 from sklearn.metrics import accuracy_score, f1_score
+# import vaderSentiment
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+sid = SentimentIntensityAnalyzer()
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -270,7 +273,7 @@ def collate_fn_padded(batch):
     # convert list to torch.tensor
     return {'target': target, 'features': features, 'sequence': sequence}
     
-def get_mapping_dict(df, word2index, vector_size=50):
+def get_mapping_dict(df, word2index, vector_size=50, use_sentiment = False):
     vocab = word2index
     word2vec_embeddings = {}
     print('\nword2vec embeddings...')
@@ -283,7 +286,11 @@ def get_mapping_dict(df, word2index, vector_size=50):
     words = list(model.wv.index_to_key)
     for word in vocab.keys():
         if word in words:
-            word2vec_embeddings[word] = model.wv[word]
+            if use_sentiment:
+                #word2vec_embeddings[word] = np.append(model.wv[word], df[df['text'].str.contains(word)]['sa'].mean())
+                word2vec_embeddings[word] = model.wv[word]* (1 + df[df['text'].str.contains(word)]['sa'].mean())
+            else:
+                word2vec_embeddings[word] = model.wv[word]
         else:
             word2vec_embeddings[word] = np.zeros(vector_size)
 
@@ -481,7 +488,10 @@ def training_model(model, optimizer, criterion, train_iterator, eval_iterator, e
     # for early stopping
     stop = 0  # increase this number if the model didn't become more accurate compared to the last best epoch
     min_eval_acc = 0. # assign this number as the best evaluation accuracy score
-
+    best_epoch = 0 # assign this number as the best epoch
+    best_loss = 0. # assign this number as the best loss
+    best_acc = 0. # assign this number as the best accuracy
+    best_f1 = 0. # assign this number as the best f1-score
     for epoch in range(epochs): # Epochs Loop 
     
         loss, f1, acc = train_func(model, optimizer, criterion, train_iterator, using_features)  # train model
@@ -509,7 +519,7 @@ def training_model(model, optimizer, criterion, train_iterator, eval_iterator, e
             # print the current as the 'Best Epoch score'
             print(
                 f'BEST Epoch({best_epoch} | Train(loss: {best_loss} | acc: {best_acc} | f1-score: {best_f1}) & Eval(loss: {best_eval_loss} | acc: {best_eval_acc} | f1-score: {best_eval_f1})\n')
-            return best_model, best_epoch, best_loss, best_acc, best_f1, best_eval_loss, best_eval_acc, best_eval_f1
+            #return best_model, best_epoch, best_loss, best_acc, best_f1, best_eval_loss, best_eval_acc, best_eval_f1
 
         # if current accuracy wasn't greater then the best accuracy add 1 to 'stop'
         else:
@@ -519,12 +529,12 @@ def training_model(model, optimizer, criterion, train_iterator, eval_iterator, e
                 f'Epoch({epoch + 1} | Train(loss: {loss} | acc: {acc} | f1-score: {f1}) & Eval(loss: {eval_loss} | acc: {eval_acc} | f1-score: {eval_f1})\n')
         
         # if 'stop' reached 5 it will stop training
-        if stop == 5:
+        if stop == 10:
             print('EARLY STOPPING!')
             # print the best epoch recorded during the whole training
             print(
                 f'BEST EPOCH({best_epoch} | Train(loss:{best_loss} | acc:{best_acc} | f1-score:{best_f1}) & Eval(loss: {best_eval_loss} | acc: {best_eval_acc} | f1-score: {best_eval_f1})\n')
-            return [best_model, best_epoch, best_loss, best_acc, best_f1, best_eval_loss, best_eval_acc, best_eval_f1]
+            #return [best_model, best_epoch, best_loss, best_acc, best_f1, best_eval_loss, best_eval_acc, best_eval_f1]
             # save best model
             # torch.save(best_model, f'epoch_{best_epoch}_val_loss_{best_eval_loss}_val_acc_{best_eval_acc}_val_f1_{best_eval_f1}.pt')
             break

@@ -12,7 +12,7 @@ nltk.download('wordnet')
 nltk.download('punkt')
 import re
 import string
-
+MAX_LEN = 0
 
 
 class PreProcessing:
@@ -282,7 +282,7 @@ class DataAnlysisPCA:
         plt.show()
         print(f"{percentile} Percentile of Text Lengths: {self.MAX_LEN}")
         
-    def get_most_common_words(self, top_n_words = 50, plot = False):
+    def get_most_common_words(self, top_n_words = 50, plot = False, only_word_count = True):
         '''
         Get the most common words
         top_n_words: number of words to return
@@ -298,6 +298,8 @@ class DataAnlysisPCA:
         word_count_df = word_count_df[:top_n_words]
         if plot:
             self.plot_most_common_words(word_count_df)
+        if only_word_count:
+            return word_count_df
         df_most_common = self.build_top_words_count_matrix(top_n_words, word_count_df, plot)
         df_pca = self.dimension_reduction(df_most_common)
         return word_count_df, df_most_common, df_pca
